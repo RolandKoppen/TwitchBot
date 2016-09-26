@@ -10,6 +10,10 @@ namespace TwitchBot
     {
         static void Main(string[] args)
         {
+
+            // Make sure we output to UTF8
+            Console.OutputEncoding = Encoding.UTF8;
+
         }
     }
 }

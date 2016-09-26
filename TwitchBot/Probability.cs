@@ -8,6 +8,9 @@ namespace TwitchBot
 {
     class Probability
     {
+        // Enable Debugging
+        Debugging Debug = new Debugging("Probability.txt");
+
         // Identify Random Number Generator
         Random Rand;
 
@@ -29,6 +32,7 @@ namespace TwitchBot
         {
             if (Rand.Next(1,101) <= Percent)
             {
+                Debug.WriteDebug("Probability: ProbabilityPercentage > Hit " + Percent + "% on " + Message);
                 return true;
             }
             else

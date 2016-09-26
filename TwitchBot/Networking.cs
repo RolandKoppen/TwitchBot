@@ -109,9 +109,13 @@ namespace TwitchBot
                             Debug.WriteDebug("Networking > Connect > Recieved: " + myCompleteMessage);
 
                             // Apply Filters
-                            cf_ChannelFilter.ContainsCaps(myCompleteMessage.ToString());
-                            cf_ChannelFilter.ContainsURL(myCompleteMessage.ToString());
-                            cf_ChannelFilter.ContainsTwitchUsername(s_TwitchUsername, myCompleteMessage.ToString());
+                            if (myCompleteSplitMessage[1] == "PRIVMSG")
+                            {
+                                string Message = myCompleteSplitMessage[3].Remove(0, 1); // Remove first : Character from Message 3
+                                cf_ChannelFilter.ContainsCaps(Message);
+                                cf_ChannelFilter.ContainsURL(Message);
+                                cf_ChannelFilter.ContainsTwitchUsername(s_TwitchUsername, Message);
+                            }
 
                             // Twitch Ping Pong (KEEP-ALIVE)
                             if (myCompleteSplitMessage[0] == "PING" && myCompleteSplitMessage[1].Length > 0)

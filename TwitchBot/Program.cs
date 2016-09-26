@@ -17,6 +17,8 @@ namespace TwitchBot
             // Initialize Debug Logging
             Debugging Debug = new Debugging("Logfile.txt");
 
+            // Stop console from closing (Enter key)
+            Console.ReadLine();
         }
     }
 }

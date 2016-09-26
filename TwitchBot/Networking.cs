@@ -21,6 +21,12 @@ namespace TwitchBot
         // Enable Debugging
         Debugging Debug = new Debugging("Networking.txt");
 
+        // Enable Probability
+        Probability p_Probability = new Probability();
+
+        // Enable ChannelFilter
+        ChannelFilter cf_ChannelFilter = new ChannelFilter();
+
         // Constructor
         public Networking(string IRCServerAddress, int IRCServerPort, int IRCServerReconnectTime, string TwitchUsername, string TwitchToken, string TwitchChannel, string TwitchMaster)
         {
@@ -101,6 +107,10 @@ namespace TwitchBot
                             string[] myCompleteSplitMessage = myCompleteMessage.ToString().Split(' ');
 
                             Debug.WriteDebug("Networking > Connect > Recieved: " + myCompleteMessage);
+
+                            // Apply Filters
+                            cf_ChannelFilter.ContainsCaps(myCompleteMessage.ToString());
+                            cf_ChannelFilter.ContainsURL(myCompleteMessage.ToString());
 
                             // Twitch Ping Pong (KEEP-ALIVE)
                             if (myCompleteSplitMessage[0] == "PING" && myCompleteSplitMessage[1].Length > 0)

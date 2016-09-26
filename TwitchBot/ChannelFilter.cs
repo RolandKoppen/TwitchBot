@@ -21,7 +21,7 @@ namespace TwitchBot
         }
 
         // If Message is all CAPS
-        public bool AllCaps (string Message)
+        public bool ContainsCaps (string Message)
         {
             for (int i = 0; i < Message.Length; i++)
             {
@@ -30,6 +30,19 @@ namespace TwitchBot
             }
 
             return true;
+        }
+
+        // Returns true if the Message contains HTTP://
+        public bool ContainsURL (string Message)
+        {
+            if (Message.Contains("http://") == true)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
     }
 }

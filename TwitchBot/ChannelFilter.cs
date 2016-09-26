@@ -8,6 +8,9 @@ namespace TwitchBot
 {
     class ChannelFilter
     {
+        // Enable Debugging
+        Debugging Debug = new Debugging("ChannelFilter.txt");
+        
         // Constructor
         public ChannelFilter()
         {
@@ -28,7 +31,7 @@ namespace TwitchBot
                 if (!Char.IsUpper(Message[i]))
                     return false;
             }
-
+            Debug.WriteDebug("ChannelFilter: ContainsCaps > " + Message);
             return true;
         }
 
@@ -37,6 +40,7 @@ namespace TwitchBot
         {
             if (Message.Contains("http://") == true)
             {
+                Debug.WriteDebug("ChannelFilter: ContainsURL > " + Message);
                 return true;
             }
             else

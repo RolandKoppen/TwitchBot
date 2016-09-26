@@ -32,7 +32,7 @@ namespace TwitchBot
         {
             if (Rand.Next(1,101) <= Percent)
             {
-                Debug.WriteDebug("Probability: ProbabilityPercentage > Hit " + Percent + "% on " + Message);
+                Debug.WriteDebug("Probability: ProbabilityPercentage > Hit " + Percent + "%");
                 return true;
             }
             else

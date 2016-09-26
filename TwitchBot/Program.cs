@@ -14,6 +14,9 @@ namespace TwitchBot
             // Make sure we output to UTF8
             Console.OutputEncoding = Encoding.UTF8;
 
+            // Initialize Debug Logging
+            Debugging Debug = new Debugging("Logfile.txt");
+
         }
     }
 }

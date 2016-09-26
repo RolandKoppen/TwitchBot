@@ -24,6 +24,7 @@ namespace TwitchBot
 
         }
 
+        // Returns true wether you get the drop rate/outcome. With Percent 25 it is 1/4 to become true
         public bool ProbabilityPercentage(int Percent)
         {
             if (Rand.Next(1,101) <= Percent)

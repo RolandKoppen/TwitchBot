@@ -46,6 +46,7 @@ namespace TwitchBot
 
         }
 
+        // Connect to the IRC/Twitch Server & Loop (Blocking Wise)
         public void Connect()
         {
             if (b_IsConnected == true)
@@ -123,6 +124,7 @@ namespace TwitchBot
             }
         }
 
+        // Disconnect from IRC/Twitch Server
         public void Disconnect()
         {
             if (b_IsConnected == false)
@@ -138,6 +140,7 @@ namespace TwitchBot
             }
         }
 
+        // Send a message through the socket to IRC/Twitch
         public void SendMessage(TcpClient Client, NetworkStream Client_Stream, string Message)
         {
             if (b_IsConnected == false)

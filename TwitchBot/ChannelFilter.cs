@@ -19,5 +19,17 @@ namespace TwitchBot
         {
 
         }
+
+        // If Message is all CAPS
+        public bool AllCaps (string Message)
+        {
+            for (int i = 0; i < Message.Length; i++)
+            {
+                if (!Char.IsUpper(Message[i]))
+                    return false;
+            }
+
+            return true;
+        }
     }
 }

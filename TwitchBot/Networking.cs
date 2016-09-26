@@ -109,13 +109,28 @@ namespace TwitchBot
                             Debug.WriteDebug("Networking > Connect > Recieved: " + myCompleteMessage);
 
                             // Apply Filters
-                            if (myCompleteSplitMessage[1] == "PRIVMSG")
-                            {
-                                string Message = myCompleteSplitMessage[3].Remove(0, 1); // Remove first : Character from Message 3
-                                cf_ChannelFilter.ContainsCaps(Message);
-                                cf_ChannelFilter.ContainsURL(Message);
-                                cf_ChannelFilter.ContainsTwitchUsername(s_TwitchUsername, Message);
-                            }
+                            //if (myCompleteSplitMessage[1] == "PRIVMSG")
+                            //{
+                            //    StringBuilder Message = new StringBuilder();
+                            //    if (myCompleteSplitMessage.Length >= 3)
+                            //    {
+                            //        for (int i = 3; i < myCompleteSplitMessage.Length; i++) // Loop and get rest of the message till the end
+                            //        {
+                            //            if (i == 3)
+                            //            {
+                            //                Message.AppendLine(myCompleteSplitMessage[i]);
+                            //            }
+                            //            else
+                            //            {
+                            //                Message.AppendLine(" " + myCompleteSplitMessage[i]);
+                            //            }
+                            //        }
+                            //        Message.Remove(0, 1); // Remove First : from PRIVMSG string
+                            //    }
+                            //    cf_ChannelFilter.ContainsCaps(Message.ToString());
+                            //    cf_ChannelFilter.ContainsURL(Message.ToString());
+                            //    cf_ChannelFilter.ContainsTwitchUsername(s_TwitchUsername, Message.ToString());
+                            //}
 
                             // Twitch Ping Pong (KEEP-ALIVE)
                             if (myCompleteSplitMessage[0] == "PING" && myCompleteSplitMessage[1].Length > 0)

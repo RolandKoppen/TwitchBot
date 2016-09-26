@@ -111,6 +111,7 @@ namespace TwitchBot
                             // Apply Filters
                             cf_ChannelFilter.ContainsCaps(myCompleteMessage.ToString());
                             cf_ChannelFilter.ContainsURL(myCompleteMessage.ToString());
+                            cf_ChannelFilter.ContainsTwitchUsername(s_TwitchUsername, myCompleteMessage.ToString());
 
                             // Twitch Ping Pong (KEEP-ALIVE)
                             if (myCompleteSplitMessage[0] == "PING" && myCompleteSplitMessage[1].Length > 0)

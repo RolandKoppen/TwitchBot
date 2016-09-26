@@ -48,5 +48,18 @@ namespace TwitchBot
                 return false;
             }
         }
+
+        public bool ContainsTwitchUsername (string TwitchUsername, string Message)
+        {
+            if (Message.Contains(TwitchUsername) == true)
+            {
+                Debug.WriteDebug("ChannelFilter: ContainsMyName > " + TwitchUsername + ":" + Message);
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
     }
 }

@@ -24,23 +24,23 @@ namespace TwitchBot
         }
 
         // If Message is all CAPS
-        public bool ContainsCaps (string Message)
+        public bool ContainsCaps (string Username, string Message)
         {
             for (int i = 0; i < Message.Length; i++)
             {
                 if (!Char.IsUpper(Message[i]))
                     return false;
             }
-            Debug.WriteDebug("ChannelFilter: ContainsCaps > " + Message);
+            Debug.WriteDebug("ChannelFilter: ContainsCaps > Username: " + Username + " Message: " + Message);
             return true;
         }
 
         // Returns true if the Message contains HTTP://
-        public bool ContainsURL (string Message)
+        public bool ContainsURL(string Username, string Message)
         {
             if (Message.Contains("http://") == true)
             {
-                Debug.WriteDebug("ChannelFilter: ContainsURL > " + Message);
+                Debug.WriteDebug("ChannelFilter: ContainsURL > Username: " + Username + " Message: " + Message);
                 return true;
             }
             else
@@ -49,11 +49,12 @@ namespace TwitchBot
             }
         }
 
-        public bool ContainsTwitchUsername (string TwitchUsername, string Message)
+        // Returns true if the Message contains the Bot Username
+        public bool ContainsTwitchUsername (string Username, string TwitchUsername, string Message)
         {
             if (Message.Contains(TwitchUsername) == true)
             {
-                Debug.WriteDebug("ChannelFilter: ContainsMyName > " + TwitchUsername + ":" + Message);
+                Debug.WriteDebug("ChannelFilter: ContainsTwitchUsername > Username: " + Username + " Message: " + Message);
                 return true;
             }
             else

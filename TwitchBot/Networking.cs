@@ -5,6 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Net.Sockets; // Used for Networking
 using System.Threading; // Used for Reconnect Timer
+using System.IO; // Used for StreamReader
+
 namespace TwitchBot
 {
     class Networking
@@ -76,71 +78,21 @@ namespace TwitchBot
                     SendMessage(t_Client, ns_Client, "CAP REQ :twitch.tv/commands"); // Activate Commands such as WHISPER/HOST/BAN/PERMABAN/DONATION/MODS
                     SendMessage(t_Client, ns_Client, "JOIN " + s_TwitchChannel);
                     // Let channel know that its connected
-                    SendMessage(t_Client, ns_Client, ":" + s_TwitchUsername + "!" + s_TwitchUsername + "@" + s_TwitchUsername + ".tmi.twitch.tv PRIVMSG " + s_TwitchChannel + " :Connected ...");
+                    //SendMessage(t_Client, ns_Client, ":" + s_TwitchUsername + "!" + s_TwitchUsername + "@" + s_TwitchUsername + ".tmi.twitch.tv PRIVMSG " + s_TwitchChannel + " :Connected ..."); // We reconnect too often at the moment
 
                     while (b_IsConnected == true)
                     {
-                        if (ns_Client.CanRead)
+                        // We need to try reading Per Line and not in a stream of 1024 data. We need to analyze each line speratly. Thus we need to stop using \r\n and or splitting methods.
+                        // Try new approach
+
+                        using (StreamReader Reader = new StreamReader(t_Client.GetStream(), Encoding.UTF8))
                         {
-                            byte[] myReadBuffer = new byte[1024];
-                            StringBuilder myCompleteMessage = new StringBuilder();
-                            int numberOfBytesRead = 0;
-                            // Incoming message may be larger than the buffer size.
-                            do
+                            string Message;
+                            while ((Message = Reader.ReadLine()) != null) // Read untill the socket dies?
                             {
-                                numberOfBytesRead = ns_Client.Read(myReadBuffer, 0, myReadBuffer.Length);
-                                myCompleteMessage.AppendFormat("{0}", Encoding.UTF8.GetString(myReadBuffer, 0, numberOfBytesRead)); // Decode UTF8
-                                myCompleteMessage.ToString().TrimEnd(new char[] { '\r', '\n' });
+                                Debug.WriteDebug(Message);
+                                Parse_Message(Message);
                             }
-                            while (ns_Client.DataAvailable);
-
-                            // Log the recieved message
-                            myCompleteMessage.Replace("\r\n", "");
-
-                            if (myCompleteMessage.Length == 0)
-                            {
-                                Debug.WriteDebug("Networking > Connect > Recieved Empty Message");
-                                return; // Exit looping/non existant socket, or some bug (yet)
-                            }
-
-                            // Split and Parse message
-                            string[] myCompleteSplitMessage = myCompleteMessage.ToString().Split(' ');
-
-                            Debug.WriteDebug("Networking > Connect > Recieved: " + myCompleteMessage);
-
-                            // Apply Filters
-                            //if (myCompleteSplitMessage[1] == "PRIVMSG")
-                            //{
-                            //    StringBuilder Message = new StringBuilder();
-                            //    if (myCompleteSplitMessage.Length >= 3)
-                            //    {
-                            //        for (int i = 3; i < myCompleteSplitMessage.Length; i++) // Loop and get rest of the message till the end
-                            //        {
-                            //            if (i == 3)
-                            //            {
-                            //                Message.AppendLine(myCompleteSplitMessage[i]);
-                            //            }
-                            //            else
-                            //            {
-                            //                Message.AppendLine(" " + myCompleteSplitMessage[i]);
-                            //            }
-                            //        }
-                            //        Message.Remove(0, 1); // Remove First : from PRIVMSG string
-                            //    }
-                            //    cf_ChannelFilter.ContainsCaps(Message.ToString());
-                            //    cf_ChannelFilter.ContainsURL(Message.ToString());
-                            //    cf_ChannelFilter.ContainsTwitchUsername(s_TwitchUsername, Message.ToString());
-                            //}
-
-                            // Twitch Ping Pong (KEEP-ALIVE)
-                            if (myCompleteSplitMessage[0] == "PING" && myCompleteSplitMessage[1].Length > 0)
-                            {
-                                SendMessage(t_Client, ns_Client, "PONG " + myCompleteSplitMessage[1]);
-                            }
-                        }
-                        else
-                        {
-                            Debug.WriteDebug("Networking > Connect > You cannot read from this NetworkStream");
                         }
                     }
                 }
@@ -151,6 +103,40 @@ namespace TwitchBot
                     Thread.Sleep(i_IRCServerReconnectTime);
                     Connect();
                 }
+            }
+        }
+
+        public void Parse_Message(string Message)
+        {
+            string[] SplitMessage = Message.Split(' ');
+
+            // Twitch Ping Pong (KEEP-ALIVE)
+            if (SplitMessage[0] == "PING")
+            {
+                SendMessage(t_Client, ns_Client, "PONG " + SplitMessage[1]);
+            }
+            // Channel Message
+            else if (SplitMessage[1] == "PRIVMSG")
+            {
+                string[] Username = SplitMessage[0].Split('!');
+                Username[0] = Username[0].Remove(0, 1); // Remove first : character from Username
+                string PrivateMessage = null;
+                for (int i = 3; i < SplitMessage.Length; i++) // Build whole sentance from PRIVMSG
+                {
+                    if (i == 3)
+                    {
+                        PrivateMessage += SplitMessage[i];
+                        PrivateMessage.Remove(0, 1); // Remove first : character (":wimpflix98!wimpflix98@wimpflix98.tmi.twitch.tv PRIVMSG #summit1g :SourPls ANELE")
+                    }
+                    else
+                    {
+                        PrivateMessage += " " + SplitMessage[i];
+                    }
+                }
+
+                cf_ChannelFilter.ContainsCaps(Username[0], PrivateMessage);
+                cf_ChannelFilter.ContainsURL(Username[0], PrivateMessage);
+                cf_ChannelFilter.ContainsTwitchUsername(Username[0], s_TwitchUsername, PrivateMessage);
             }
         }
 

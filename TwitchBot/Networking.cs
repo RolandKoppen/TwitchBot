@@ -126,7 +126,7 @@ namespace TwitchBot
                     if (i == 3)
                     {
                         PrivateMessage += SplitMessage[i];
-                        PrivateMessage.Remove(0, 1); // Remove first : character (":wimpflix98!wimpflix98@wimpflix98.tmi.twitch.tv PRIVMSG #summit1g :SourPls ANELE")
+                        PrivateMessage = PrivateMessage.Remove(0, 1); // Remove first : character (":wimpflix98!wimpflix98@wimpflix98.tmi.twitch.tv PRIVMSG #summit1g :SourPls ANELE")
                     }
                     else
                     {

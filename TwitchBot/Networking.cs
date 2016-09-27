@@ -90,7 +90,7 @@ namespace TwitchBot
                             string Message;
                             while ((Message = Reader.ReadLine()) != null) // Read untill the socket dies?
                             {
-                                Debug.WriteDebug(Message);
+                                Debug.WriteDebug("Networking > Connect > Recieved: " + Message);
                                 Parse_Message(Message);
                             }
                         }

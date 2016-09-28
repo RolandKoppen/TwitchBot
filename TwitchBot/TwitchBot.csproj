@@ -45,6 +45,7 @@
   <ItemGroup>
     <Compile Include="ChannelFilter.cs" />
     <Compile Include="Debugging.cs" />
+    <Compile Include="Moderators.cs" />
     <Compile Include="Networking.cs" />
     <Compile Include="Probability.cs" />
     <Compile Include="Program.cs" />

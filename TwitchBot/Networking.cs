@@ -29,6 +29,9 @@ namespace TwitchBot
         // Enable ChannelFilter
         ChannelFilter cf_ChannelFilter = new ChannelFilter();
 
+        // Enable Moderators
+        Moderators m_Moderators = new Moderators();
+
         // Constructor
         public Networking(string IRCServerAddress, int IRCServerPort, int IRCServerReconnectTime, string TwitchUsername, string TwitchToken, string TwitchChannel, string TwitchMaster)
         {
@@ -72,13 +75,13 @@ namespace TwitchBot
 
                     // Send First Messages to Authenticate (Basicly IRC RFC)
                     Debug.WriteDebug("Networking > Connect > Handshaking with Protocol");
-                    SendMessage(t_Client, ns_Client, "PASS " + s_TwitchToken);
-                    SendMessage(t_Client, ns_Client, "NICK " + s_TwitchUsername);
-                    SendMessage(t_Client, ns_Client, "CAP REQ :twitch.tv/membership"); // Shows JOIN/PART/UMODES
-                    SendMessage(t_Client, ns_Client, "CAP REQ :twitch.tv/commands"); // Activate Commands such as WHISPER/HOST/BAN/PERMABAN/DONATION/MODS
-                    SendMessage(t_Client, ns_Client, "JOIN " + s_TwitchChannel);
+                    SendMessage("PASS " + s_TwitchToken);
+                    SendMessage("NICK " + s_TwitchUsername);
+                    SendMessage("CAP REQ :twitch.tv/membership"); // Shows JOIN/PART/UMODES
+                    SendMessage("CAP REQ :twitch.tv/commands"); // Activate Commands such as WHISPER/HOST/BAN/PERMABAN/DONATION/MODS
+                    SendMessage("JOIN " + s_TwitchChannel);
                     // Let channel know that its connected
-                    //SendMessage(t_Client, ns_Client, ":" + s_TwitchUsername + "!" + s_TwitchUsername + "@" + s_TwitchUsername + ".tmi.twitch.tv PRIVMSG " + s_TwitchChannel + " :Connected ..."); // We reconnect too often at the moment
+                    //SendMessage(ns_Client, ":" + s_TwitchUsername + "!" + s_TwitchUsername + "@" + s_TwitchUsername + ".tmi.twitch.tv PRIVMSG " + s_TwitchChannel + " :Connected ..."); // We reconnect too often at the moment
 
                     while (b_IsConnected == true)
                     {
@@ -88,6 +91,7 @@ namespace TwitchBot
                         using (StreamReader Reader = new StreamReader(t_Client.GetStream(), Encoding.UTF8))
                         {
                             string Message;
+                            // Try/Catch, Exception when !bye is used
                             while ((Message = Reader.ReadLine()) != null) // Read untill the socket dies?
                             {
                                 Debug.WriteDebug("Networking > Connect > Recieved: " + Message);
@@ -113,13 +117,19 @@ namespace TwitchBot
             // Twitch Ping Pong (KEEP-ALIVE)
             if (SplitMessage[0] == "PING")
             {
-                SendMessage(t_Client, ns_Client, "PONG " + SplitMessage[1]);
+                SendMessage("PONG " + SplitMessage[1]);
+            }
+            // Learn Moderator Status
+            else if (SplitMessage[1] == "MODE")
+            {
+                m_Moderators.ModeratorStatus(SplitMessage[4], SplitMessage[3]);
             }
             // Channel Message
             else if (SplitMessage[1] == "PRIVMSG")
             {
                 string[] Username = SplitMessage[0].Split('!');
                 Username[0] = Username[0].Remove(0, 1); // Remove first : character from Username
+                string MyUsername = ":" + s_TwitchUsername + "!" + s_TwitchUsername + "@" + s_TwitchUsername + ".tmi.twitch.tv"; // Build MyUsername for easy access
                 string PrivateMessage = null;
                 for (int i = 3; i < SplitMessage.Length; i++) // Build whole sentance from PRIVMSG
                 {
@@ -132,6 +142,43 @@ namespace TwitchBot
                     {
                         PrivateMessage += " " + SplitMessage[i];
                     }
+                }
+                string[] MySplitPrivateMessage = PrivateMessage.Split(' ');
+
+                if (MySplitPrivateMessage[0] == "!saychannel" && m_Moderators.IsModerator(Username[0]))
+                {
+                    SendChannelMessage(MyUsername, "This is a channel message");
+                }
+                else if (MySplitPrivateMessage[0] == "!amiamod")
+                {
+                    SendChannelMessage(MyUsername, "The output is: " + m_Moderators.IsModerator(Username[0]));
+                }
+                else if (MySplitPrivateMessage[0] == "!whisperme" && m_Moderators.IsModerator(Username[0]))
+                {
+                    SendUsernameWhisper(MyUsername, Username[0], "This is a whisper message");
+                }
+                else if (MySplitPrivateMessage[0] == "!25percentchance" && m_Moderators.IsModerator(Username[0]))
+                {
+                    SendChannelMessage(MyUsername, "The output is: " + p_Probability.ProbabilityPercentage(25));
+                }
+                else if (MySplitPrivateMessage[0] == "!join" && m_Moderators.IsModerator(Username[0]))
+                {
+                    SendChannelMessage(MyUsername, "Trying to join " + MySplitPrivateMessage[1]);
+                    JoinChannel(MyUsername, PrivateMessage);
+                }
+                else if (MySplitPrivateMessage[0] == "!part" && m_Moderators.IsModerator(Username[0]))
+                {
+                    SendChannelMessage(MyUsername, "Trying to part " + MySplitPrivateMessage[1]);
+                    PartChannel(MyUsername, PrivateMessage);
+                }
+                else if (MySplitPrivateMessage[0] == "!countmods" && m_Moderators.IsModerator(Username[0]))
+                {
+                    SendChannelMessage(MyUsername, "We have " + m_Moderators.TotalModerators());
+                }
+                else if (MySplitPrivateMessage[0] == "!bye" && m_Moderators.IsModerator(Username[0]))
+                {
+                    SendChannelMessage(MyUsername, "Quitting!");
+                    Disconnect();
                 }
 
                 cf_ChannelFilter.ContainsCaps(Username[0], PrivateMessage);
@@ -157,7 +204,7 @@ namespace TwitchBot
         }
 
         // Send a message through the socket to IRC/Twitch
-        public void SendMessage(TcpClient Client, NetworkStream Client_Stream, string Message)
+        public void SendMessage(string Message)
         {
             if (b_IsConnected == false)
             {
@@ -167,8 +214,32 @@ namespace TwitchBot
             {
                 Debug.WriteDebug("Networking > Connect > Sent: " + Message);
                 byte[] b_Message = System.Text.Encoding.UTF8.GetBytes(Message + "\r\n"); // Encode UTF8
-                Client_Stream.Write(b_Message, 0, b_Message.Length);
+                ns_Client.Write(b_Message, 0, b_Message.Length);
             }
+        }
+
+        // Send a Message to a Channel
+        public void SendChannelMessage(string MyUsername, string Message)
+        {
+            SendMessage(MyUsername + " PRIVMSG " + s_TwitchChannel + " :" + Message);
+        }
+
+        // Send a Whisper to a Username
+        public void SendUsernameWhisper(string MyUsername, string Username, string Message)
+        {
+            SendMessage(MyUsername + " PRIVMSG #jtv :/w " + Username + " :" + Message);
+        }
+
+        // Join Channel
+        public void JoinChannel(string MyUsername, string Channel)
+        {
+            SendMessage(MyUsername + " JOIN " + Channel);
+        }
+
+        // Part Channel
+        public void PartChannel(string MyUsername, string Channel)
+        {
+            SendMessage(MyUsername + " PART " + Channel);
         }
     }
 }

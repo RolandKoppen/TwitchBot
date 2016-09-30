@@ -130,20 +130,14 @@ namespace TwitchBot
                 string[] Username = SplitMessage[0].Split('!');
                 Username[0] = Username[0].Remove(0, 1); // Remove first : character from Username
                 string MyUsername = ":" + s_TwitchUsername + "!" + s_TwitchUsername + "@" + s_TwitchUsername + ".tmi.twitch.tv"; // Build MyUsername for easy access
-                string PrivateMessage = null;
-                for (int i = 3; i < SplitMessage.Length; i++) // Build whole sentance from PRIVMSG
-                {
-                    if (i == 3)
-                    {
-                        PrivateMessage += SplitMessage[i];
-                        PrivateMessage = PrivateMessage.Remove(0, 1); // Remove first : character (":wimpflix98!wimpflix98@wimpflix98.tmi.twitch.tv PRIVMSG #summit1g :SourPls ANELE")
-                    }
-                    else
-                    {
-                        PrivateMessage += " " + SplitMessage[i];
-                    }
-                }
+                string PrivateMessage = BuildPrivateMessage(SplitMessage);
                 SendUsernameWhisper(MyUsername, Username[0], "You send me: " + PrivateMessage);
+
+                string[] MySplitPrivateMessage = PrivateMessage.Split(' ');
+                if (MySplitPrivateMessage[0] == "!mods" && m_Moderators.IsModerator(Username[0]))
+                {
+                    SendUsernameWhisper(MyUsername, Username[0], "This is a whisper message");
+                }
             }
             // Channel Message
             else if (SplitMessage[1] == "PRIVMSG")
@@ -151,19 +145,7 @@ namespace TwitchBot
                 string[] Username = SplitMessage[0].Split('!');
                 Username[0] = Username[0].Remove(0, 1); // Remove first : character from Username
                 string MyUsername = ":" + s_TwitchUsername + "!" + s_TwitchUsername + "@" + s_TwitchUsername + ".tmi.twitch.tv"; // Build MyUsername for easy access
-                string PrivateMessage = null;
-                for (int i = 3; i < SplitMessage.Length; i++) // Build whole sentance from PRIVMSG
-                {
-                    if (i == 3)
-                    {
-                        PrivateMessage += SplitMessage[i];
-                        PrivateMessage = PrivateMessage.Remove(0, 1); // Remove first : character (":wimpflix98!wimpflix98@wimpflix98.tmi.twitch.tv PRIVMSG #summit1g :SourPls ANELE")
-                    }
-                    else
-                    {
-                        PrivateMessage += " " + SplitMessage[i];
-                    }
-                }
+                string PrivateMessage = BuildPrivateMessage(SplitMessage);
                 string[] MySplitPrivateMessage = PrivateMessage.Split(' ');
 
                 if (MySplitPrivateMessage[0] == "!saychannel" && m_Moderators.IsModerator(Username[0]))
@@ -237,6 +219,25 @@ namespace TwitchBot
                 byte[] b_Message = System.Text.Encoding.UTF8.GetBytes(Message + "\r\n"); // Encode UTF8
                 ns_Client.Write(b_Message, 0, b_Message.Length);
             }
+        }
+
+        // Return the Full Private Message String
+        public string BuildPrivateMessage(string[] SplitMessage)
+        {
+            string PrivateMessage = null;
+            for (int i = 3; i < SplitMessage.Length; i++) // Build whole sentance from PRIVMSG
+            {
+                if (i == 3)
+                {
+                    PrivateMessage += SplitMessage[i];
+                    PrivateMessage = PrivateMessage.Remove(0, 1); // Remove first : character (":username!username@username.tmi.twitch.tv PRIVMSG #somechannel :some message Kappa")
+                }
+                else
+                {
+                    PrivateMessage += " " + SplitMessage[i];
+                }
+            }
+            return PrivateMessage;
         }
 
         // Send a Message to a Channel

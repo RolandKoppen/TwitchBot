@@ -138,6 +138,29 @@ namespace TwitchBot
                 {
                     SendUsernameWhisper(MyUsername, Username[0], "This is a whisper message");
                 }
+                else if (MySplitPrivateMessage[0] == "!join" && m_Moderators.IsModerator(Username[0]))
+                {
+                    SendUsernameWhisper(MyUsername, Username[0], "Trying to join " + MySplitPrivateMessage[1]);
+                    JoinChannel(MyUsername, MySplitPrivateMessage[1]);
+                }
+                else if (MySplitPrivateMessage[0] == "!part" && m_Moderators.IsModerator(Username[0]))
+                {
+                    SendUsernameWhisper(MyUsername, Username[0], "Trying to part " + MySplitPrivateMessage[1]);
+                    PartChannel(MyUsername, MySplitPrivateMessage[1]);
+                }
+                else if (MySplitPrivateMessage[0] == "!25percentchance" && m_Moderators.IsModerator(Username[0]))
+                {
+                    SendUsernameWhisper(MyUsername, Username[0], "The output is: " + p_Probability.ProbabilityPercentage(25));
+                }
+                else if (MySplitPrivateMessage[0] == "!countmods" && m_Moderators.IsModerator(Username[0]))
+                {
+                    SendUsernameWhisper(MyUsername, Username[0], "We have " + m_Moderators.TotalModerators());
+                }
+                else if (MySplitPrivateMessage[0] == "!bye" && m_Moderators.IsModerator(Username[0]))
+                {
+                    SendUsernameWhisper(MyUsername, Username[0], "Quitting!");
+                    Disconnect();
+                }
             }
             // Channel Message
             else if (SplitMessage[1] == "PRIVMSG")
@@ -159,29 +182,6 @@ namespace TwitchBot
                 else if (MySplitPrivateMessage[0] == "!whisperme" && m_Moderators.IsModerator(Username[0]))
                 {
                     SendUsernameWhisper(MyUsername, Username[0], "This is a whisper message");
-                }
-                else if (MySplitPrivateMessage[0] == "!25percentchance" && m_Moderators.IsModerator(Username[0]))
-                {
-                    SendChannelMessage(MyUsername, "The output is: " + p_Probability.ProbabilityPercentage(25));
-                }
-                else if (MySplitPrivateMessage[0] == "!join" && m_Moderators.IsModerator(Username[0]))
-                {
-                    SendChannelMessage(MyUsername, "Trying to join " + MySplitPrivateMessage[1]);
-                    JoinChannel(MyUsername, PrivateMessage);
-                }
-                else if (MySplitPrivateMessage[0] == "!part" && m_Moderators.IsModerator(Username[0]))
-                {
-                    SendChannelMessage(MyUsername, "Trying to part " + MySplitPrivateMessage[1]);
-                    PartChannel(MyUsername, PrivateMessage);
-                }
-                else if (MySplitPrivateMessage[0] == "!countmods" && m_Moderators.IsModerator(Username[0]))
-                {
-                    SendChannelMessage(MyUsername, "We have " + m_Moderators.TotalModerators());
-                }
-                else if (MySplitPrivateMessage[0] == "!bye" && m_Moderators.IsModerator(Username[0]))
-                {
-                    SendChannelMessage(MyUsername, "Quitting!");
-                    Disconnect();
                 }
 
                 cf_ChannelFilter.ContainsCaps(Username[0], PrivateMessage);

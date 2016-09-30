@@ -124,6 +124,27 @@ namespace TwitchBot
             {
                 m_Moderators.ModeratorStatus(SplitMessage[4], SplitMessage[3]);
             }
+            // Username Whisper
+            else if (SplitMessage[1] == "WHISPER")
+            {
+                string[] Username = SplitMessage[0].Split('!');
+                Username[0] = Username[0].Remove(0, 1); // Remove first : character from Username
+                string MyUsername = ":" + s_TwitchUsername + "!" + s_TwitchUsername + "@" + s_TwitchUsername + ".tmi.twitch.tv"; // Build MyUsername for easy access
+                string PrivateMessage = null;
+                for (int i = 3; i < SplitMessage.Length; i++) // Build whole sentance from PRIVMSG
+                {
+                    if (i == 3)
+                    {
+                        PrivateMessage += SplitMessage[i];
+                        PrivateMessage = PrivateMessage.Remove(0, 1); // Remove first : character (":wimpflix98!wimpflix98@wimpflix98.tmi.twitch.tv PRIVMSG #summit1g :SourPls ANELE")
+                    }
+                    else
+                    {
+                        PrivateMessage += " " + SplitMessage[i];
+                    }
+                }
+                SendUsernameWhisper(MyUsername, Username[0], "You send me: " + PrivateMessage);
+            }
             // Channel Message
             else if (SplitMessage[1] == "PRIVMSG")
             {
@@ -227,7 +248,7 @@ namespace TwitchBot
         // Send a Whisper to a Username
         public void SendUsernameWhisper(string MyUsername, string Username, string Message)
         {
-            SendMessage(MyUsername + " PRIVMSG #jtv :/w " + Username + " :" + Message);
+            SendMessage(MyUsername + " PRIVMSG #jtv :/w " + Username + " " + Message);
         }
 
         // Join Channel

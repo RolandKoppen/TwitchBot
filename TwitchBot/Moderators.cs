@@ -26,23 +26,16 @@ namespace TwitchBot
         }
 
         // Add or Remove Username from Moderator list
-        public void ModeratorStatus(string Username, string ModeratorStatus)
+        public void ModeratorStatus(string Username)
         {
-            Debug.WriteDebug("Moderator Status Change: " + ModeratorStatus + " for Username: " + Username);
-            if (ModeratorStatus == "+o")
-            {
-                s_Moderators.Add(Username);
-            }
-            else if (ModeratorStatus == "-o")
-            {
-                s_Moderators.Remove(Username);
-            }
+            Debug.WriteDebug("Moderator Status Change: for Username: " + Username);
+            s_Moderators.Add(Username);
         }
 
         // See if Username is a Moderator
         public bool IsModerator(string Username)
         {
-            // We need to not rely on +o -o for mod status. We need to call /mods and parse that way for each channel joined.
+            // We need to not rely on +o -o for mod status. We need to call /mods and parse that way for each channel joined. (DONE)
             // Channel joined should be an array we could foreach/for with
             if (s_Moderators.Contains(Username))
             {
@@ -58,6 +51,24 @@ namespace TwitchBot
         public int TotalModerators()
         {
             return s_Moderators.Count;
+        }
+
+        public string ReturnModerators()
+        {
+            string AllModerators = "";
+
+            for (int i = 0; i < s_Moderators.Count; i++)
+            {
+                if (i < s_Moderators.Count - 1)
+                {
+                    AllModerators += s_Moderators[i] + ", ";
+                }
+                else
+                {
+                    AllModerators += s_Moderators[i];
+                }
+            }
+            return AllModerators;
         }
     }
 }

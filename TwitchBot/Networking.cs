@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using System.Net.Sockets; // Used for Networking
 using System.Threading; // Used for Reconnect Timer
 using System.IO; // Used for StreamReader
-
 namespace TwitchBot
 {
     class Networking
@@ -83,8 +82,10 @@ namespace TwitchBot
                     SendMessage("CAP REQ :twitch.tv/membership"); // Shows JOIN/PART/UMODES
                     SendMessage("CAP REQ :twitch.tv/commands"); // Activate Commands such as WHISPER/HOST/BAN/PERMABAN/DONATION/MODS
                     SendMessage("JOIN " + s_TwitchChannel);
+                    string MyUsername = ":" + s_TwitchUsername + "!" + s_TwitchUsername + "@" + s_TwitchUsername + ".tmi.twitch.tv"; // Build MyUsername for easy access
+                    RefreshModsList(MyUsername);
                     // Let channel know that its connected
-                    //SendMessage(ns_Client, ":" + s_TwitchUsername + "!" + s_TwitchUsername + "@" + s_TwitchUsername + ".tmi.twitch.tv PRIVMSG " + s_TwitchChannel + " :Connected ..."); // We reconnect too often at the moment
+                    //SendMessage(ns_Client, ":" + s_TwitchUsername + "!" + s_TwitchUsername + "@" + s_TwitchUsername + ".tmi.twitch.tv PRIVMSG " + s_TwitchChannel + " :Connected ...");
 
                     while (b_IsConnected == true)
                     {
@@ -122,11 +123,30 @@ namespace TwitchBot
             {
                 SendMessage("PONG " + SplitMessage[1]);
             }
-            // Learn Moderator Status
-            else if (SplitMessage[1] == "MODE")
+            // Twitch Notice
+            else if (SplitMessage[0] == ":tmi.twitch.tv" && SplitMessage[1] == "NOTICE")
             {
-                m_Moderators.ModeratorStatus(SplitMessage[4], SplitMessage[3]);
+                string PrivateMessage = BuildPrivateMessage(SplitMessage);
+
+                if (PrivateMessage.Contains("The moderators of this room are:"))
+                {
+                    PrivateMessage = PrivateMessage.Remove(0, 33);
+                    string[] SplitModerators = PrivateMessage.Split(' ');
+                    for (int i = 0; i < SplitModerators.Length; i++)
+                    {
+                        if (SplitModerators[i][SplitModerators[i].Length - 1] == ',')
+                        {
+                            SplitModerators[i] = SplitModerators[i].Remove(SplitModerators[i].Length - 1, 1);
+                        }
+                        m_Moderators.ModeratorStatus(SplitModerators[i]);
+                    }
+                }
             }
+            // Learn Moderator Status
+            //else if (SplitMessage[1] == "MODE")
+            //{
+            //    m_Moderators.ModeratorStatus(SplitMessage[4]);
+            //}
             // Username Whisper
             else if (SplitMessage[1] == "WHISPER")
             {
@@ -139,7 +159,7 @@ namespace TwitchBot
                 string[] MySplitPrivateMessage = PrivateMessage.Split(' ');
                 if (MySplitPrivateMessage[0] == "!mods" && m_Moderators.IsModerator(Username[0]))
                 {
-                    SendUsernameWhisper(MyUsername, Username[0], "This is a whisper message");
+                    SendUsernameWhisper(MyUsername, Username[0], "The output is: " + m_Moderators.TotalModerators() + " Moderators: " + m_Moderators.ReturnModerators());
                 }
                 else if (MySplitPrivateMessage[0] == "!join" && m_Moderators.IsModerator(Username[0]))
                 {
@@ -182,6 +202,10 @@ namespace TwitchBot
                 {
                     SendChannelMessage(MyUsername, "The output is: " + m_Moderators.IsModerator(Username[0]));
                 }
+                else if (MySplitPrivateMessage[0] == "!mods")
+                {
+                    SendChannelMessage(MyUsername, "The output is: " + m_Moderators.TotalModerators() + " Moderators: " + m_Moderators.ReturnModerators());
+                }
                 else if (MySplitPrivateMessage[0] == "!whisperme" && m_Moderators.IsModerator(Username[0]))
                 {
                     SendUsernameWhisper(MyUsername, Username[0], "This is a whisper message");
@@ -195,7 +219,7 @@ namespace TwitchBot
                 if (Username[0] == b_ButtsBot.ButtsBotName.ToLower()) // Always cast ToLower?
                 {
                     Debug.WriteDebug("Networking > ButtsBot > ButtsBot said: " + PrivateMessage);
-                    if (p_Probability.ProbabilityPercentage(25) == true) // 25% chance to reply
+                    if (p_Probability.ProbabilityPercentage(25) == true)
                     {
                         SendChannelMessage(MyUsername, b_ButtsBot.ButtsBotReply());
                     }
@@ -251,6 +275,12 @@ namespace TwitchBot
                 }
             }
             return PrivateMessage;
+        }
+
+        // Build Mod List Without Relying On +o -o
+        public void RefreshModsList(string MyUsername)
+        {
+            SendMessage(MyUsername + " PRIVMSG " + s_TwitchChannel + " :/MODS");
         }
 
         // Send a Message to a Channel

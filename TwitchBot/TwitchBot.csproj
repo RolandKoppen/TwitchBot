@@ -43,6 +43,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ButtsBot.cs" />
     <Compile Include="ChannelFilter.cs" />
     <Compile Include="Debugging.cs" />
     <Compile Include="Moderators.cs" />

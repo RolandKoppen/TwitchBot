@@ -32,6 +32,9 @@ namespace TwitchBot
         // Enable Moderators
         Moderators m_Moderators = new Moderators();
 
+        // Enable ButtsBot
+        ButtsBot b_ButtsBot = new ButtsBot();
+
         // Constructor
         public Networking(string IRCServerAddress, int IRCServerPort, int IRCServerReconnectTime, string TwitchUsername, string TwitchToken, string TwitchChannel, string TwitchMaster)
         {
@@ -187,6 +190,16 @@ namespace TwitchBot
                 cf_ChannelFilter.ContainsCaps(Username[0], PrivateMessage);
                 cf_ChannelFilter.ContainsURL(Username[0], PrivateMessage);
                 cf_ChannelFilter.ContainsTwitchUsername(Username[0], s_TwitchUsername, PrivateMessage);
+
+                // ButtsBot Part
+                if (Username[0] == b_ButtsBot.ButtsBotName.ToLower()) // Always cast ToLower?
+                {
+                    Debug.WriteDebug("Networking > ButtsBot > ButtsBot said: " + PrivateMessage);
+                    if (p_Probability.ProbabilityPercentage(25) == true) // 25% chance to reply
+                    {
+                        SendChannelMessage(MyUsername, b_ButtsBot.ButtsBotReply());
+                    }
+                }
             }
         }
 

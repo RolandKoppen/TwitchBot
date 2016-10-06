@@ -142,11 +142,23 @@ namespace TwitchBot
                     }
                 }
             }
-            // Learn Moderator Status
-            //else if (SplitMessage[1] == "MODE")
-            //{
-            //    m_Moderators.ModeratorStatus(SplitMessage[4]);
-            //}
+            // Twitch HostTarget
+            else if (SplitMessage[0] == ":tmi.twitch.tv" && SplitMessage[1] == "HOSTTARGET")
+            {
+                string MyUsername = ":" + s_TwitchUsername + "!" + s_TwitchUsername + "@" + s_TwitchUsername + ".tmi.twitch.tv"; // Build MyUsername for easy access
+
+                SplitMessage[2] = SplitMessage[2].Remove(0, 1);
+                SplitMessage[3] = SplitMessage[3].Remove(0, 1);
+
+                if (SplitMessage[3].Contains("-"))
+                {
+                    SendChannelMessage(MyUsername, SplitMessage[2] + " has stopped the host. Welcome back everybody!");
+                }
+                else
+                {
+                    SendChannelMessage(MyUsername, SplitMessage[2] + " is now hosting " + SplitMessage[3] + " for a total of " + SplitMessage[4] + " viewers. You can also go directly to this channel and join the chat by clicking this: https://www.twitch.tv/" + SplitMessage[3]);
+                }
+            }
             // Username Whisper
             else if (SplitMessage[1] == "WHISPER")
             {
@@ -161,28 +173,20 @@ namespace TwitchBot
                 {
                     SendUsernameWhisper(MyUsername, Username[0], "The output is: " + m_Moderators.TotalModerators() + " Moderators: " + m_Moderators.ReturnModerators());
                 }
-                else if (MySplitPrivateMessage[0] == "!join" && m_Moderators.IsModerator(Username[0]))
+                // Depricated for now, focus on single channel first
+                //else if (MySplitPrivateMessage[0] == "!join" && m_Moderators.IsModerator(Username[0]))
+                //{
+                //    SendUsernameWhisper(MyUsername, Username[0], "Trying to join " + MySplitPrivateMessage[1]);
+                //    JoinChannel(MyUsername, MySplitPrivateMessage[1]);
+                //}
+                //else if (MySplitPrivateMessage[0] == "!part" && m_Moderators.IsModerator(Username[0]))
+                //{
+                //    SendUsernameWhisper(MyUsername, Username[0], "Trying to part " + MySplitPrivateMessage[1]);
+                //    PartChannel(MyUsername, MySplitPrivateMessage[1]);
+                //}
+                else if (MySplitPrivateMessage[0] == "!amiamod")
                 {
-                    SendUsernameWhisper(MyUsername, Username[0], "Trying to join " + MySplitPrivateMessage[1]);
-                    JoinChannel(MyUsername, MySplitPrivateMessage[1]);
-                }
-                else if (MySplitPrivateMessage[0] == "!part" && m_Moderators.IsModerator(Username[0]))
-                {
-                    SendUsernameWhisper(MyUsername, Username[0], "Trying to part " + MySplitPrivateMessage[1]);
-                    PartChannel(MyUsername, MySplitPrivateMessage[1]);
-                }
-                else if (MySplitPrivateMessage[0] == "!25percentchance" && m_Moderators.IsModerator(Username[0]))
-                {
-                    SendUsernameWhisper(MyUsername, Username[0], "The output is: " + p_Probability.ProbabilityPercentage(25));
-                }
-                else if (MySplitPrivateMessage[0] == "!countmods" && m_Moderators.IsModerator(Username[0]))
-                {
-                    SendUsernameWhisper(MyUsername, Username[0], "We have " + m_Moderators.TotalModerators());
-                }
-                else if (MySplitPrivateMessage[0] == "!bye" && m_Moderators.IsModerator(Username[0]))
-                {
-                    SendUsernameWhisper(MyUsername, Username[0], "Quitting!");
-                    Disconnect();
+                    SendUsernameWhisper(MyUsername, Username[0], "The output is: " + m_Moderators.IsModerator(Username[0]));
                 }
             }
             // Channel Message
@@ -194,21 +198,9 @@ namespace TwitchBot
                 string PrivateMessage = BuildPrivateMessage(SplitMessage);
                 string[] MySplitPrivateMessage = PrivateMessage.Split(' ');
 
-                if (MySplitPrivateMessage[0] == "!saychannel" && m_Moderators.IsModerator(Username[0]))
+                if (MySplitPrivateMessage[0] == "!flip" && m_Moderators.IsModerator(Username[0]))
                 {
-                    SendChannelMessage(MyUsername, "This is a channel message");
-                }
-                else if (MySplitPrivateMessage[0] == "!amiamod")
-                {
-                    SendChannelMessage(MyUsername, "The output is: " + m_Moderators.IsModerator(Username[0]));
-                }
-                else if (MySplitPrivateMessage[0] == "!mods")
-                {
-                    SendChannelMessage(MyUsername, "The output is: " + m_Moderators.TotalModerators() + " Moderators: " + m_Moderators.ReturnModerators());
-                }
-                else if (MySplitPrivateMessage[0] == "!whisperme" && m_Moderators.IsModerator(Username[0]))
-                {
-                    SendUsernameWhisper(MyUsername, Username[0], "This is a whisper message");
+                    SendChannelMessage(MyUsername, "┌∩┐( ಠ益ಠ )┌∩┐");
                 }
 
                 cf_ChannelFilter.ContainsCaps(Username[0], PrivateMessage);

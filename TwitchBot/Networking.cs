@@ -215,7 +215,13 @@ namespace TwitchBot
                     SendChannelMessage(MyUsername, "If you want to support the streamer you can give a donation on the following website: https://www.twitchalerts.com/donate/curseddolls");
                 }
 
-                cf_ChannelFilter.ContainsCaps(Username[0], PrivateMessage);
+                if (!m_Moderators.IsModerator(Username[0]))
+                {
+                    if (cf_ChannelFilter.ContainsCaps(Username[0], PrivateMessage))
+                    {
+                        SendChannelMessage(MyUsername, "Please refrain from using capital characters: " + Username[0]);
+                    }
+                }
                 cf_ChannelFilter.ContainsURL(Username[0], PrivateMessage);
                 cf_ChannelFilter.ContainsTwitchUsername(Username[0], s_TwitchUsername, PrivateMessage);
 

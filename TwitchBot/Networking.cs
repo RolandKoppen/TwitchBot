@@ -202,6 +202,18 @@ namespace TwitchBot
                 {
                     SendChannelMessage(MyUsername, "┌∩┐( ಠ益ಠ )┌∩┐");
                 }
+                else if (MySplitPrivateMessage[0] == "!backseat")
+                {
+                    SendChannelMessage(MyUsername, "No back seat gaming, if she wants / needs help she will ask for it!");
+                }
+                else if (MySplitPrivateMessage[0] == "!follow")
+                {
+                    SendChannelMessage(MyUsername, "You can follow the streamer on Twitter: https://twitter.com/cursedd0lls and Facebook: https://www.facebook.com/cursedd0lls");
+                }
+                else if (MySplitPrivateMessage[0] == "!donate")
+                {
+                    SendChannelMessage(MyUsername, "If you want to support the streamer you can give a donation on the following website: https://www.twitchalerts.com/donate/curseddolls");
+                }
 
                 cf_ChannelFilter.ContainsCaps(Username[0], PrivateMessage);
                 cf_ChannelFilter.ContainsURL(Username[0], PrivateMessage);

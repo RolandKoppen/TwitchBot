@@ -24,7 +24,6 @@ namespace TwitchBot
         // Destructor
         ~Probability()
         {
-
         }
 
         // Returns true wether you get the drop rate/outcome. With Percent 25 it is 1/4 to become true

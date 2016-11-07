@@ -18,19 +18,24 @@ namespace TwitchBot
             "NotLikeThis",
             "FeelsAmazingMan",
             "FeelsGoodMan",
-            "FeelsBadMan"
+            "FeelsBadMan",
+            "MrDestructoid",
+            "BloodTrail",
+            "FrankerZ",
+            "FailFish",
+            "KappaRoss",
+            "VoteYea",
+            "VoteNay"
         };
 
         // Constructor
         public ButtsBot()
         {
-
         }
 
         // Destructor
         ~ButtsBot()
         {
-
         }
 
         public string ButtsBotReply()

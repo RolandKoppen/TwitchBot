@@ -14,17 +14,15 @@ namespace TwitchBot
         // Constructor
         public ChannelFilter()
         {
-
         }
 
         // Destructor
         ~ChannelFilter()
         {
-
         }
 
         // If Message is all CAPS
-        public bool ContainsCaps (string Username, string Message)
+        public bool ContainsCaps(string Username, string Message)
         {
             for (int i = 0; i < Message.Length; i++)
             {
@@ -50,7 +48,7 @@ namespace TwitchBot
         }
 
         // Returns true if the Message contains the Bot Username
-        public bool ContainsTwitchUsername (string Username, string TwitchUsername, string Message)
+        public bool ContainsTwitchUsername(string Username, string TwitchUsername, string Message)
         {
             if (Message.Contains(TwitchUsername) == true)
             {

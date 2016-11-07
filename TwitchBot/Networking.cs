@@ -11,9 +11,10 @@ namespace TwitchBot
     class Networking
     {
         // Twitch Networking Information
-        string s_IRCServerAddress, s_TwitchUsername, s_TwitchToken, s_TwitchChannel, s_TwitchMaster;
+        string s_IRCServerAddress, s_TwitchUsername, s_TwitchToken, s_TwitchMaster;
         int i_IRCServerPort, i_IRCServerReconnectTime;
-        bool b_IsConnected;
+        bool b_IsConnected, b_isHosting;
+        string[] a_TwitchChannels;
 
         // Netowkring Information
         TcpClient t_Client;
@@ -34,8 +35,11 @@ namespace TwitchBot
         // Enable ButtsBot
         ButtsBot b_ButtsBot = new ButtsBot();
 
+        // Enable Quotes
+        Quotes q_Quotes = new Quotes();
+
         // Constructor
-        public Networking(string IRCServerAddress, int IRCServerPort, int IRCServerReconnectTime, string TwitchUsername, string TwitchToken, string TwitchChannel, string TwitchMaster)
+        public Networking(string IRCServerAddress, int IRCServerPort, int IRCServerReconnectTime, string TwitchUsername, string TwitchToken, string TwitchMaster)
         {
             s_IRCServerAddress = IRCServerAddress;
             Debug.WriteDebug("Networking > Setting IRC Server: " + s_IRCServerAddress);
@@ -47,16 +51,15 @@ namespace TwitchBot
             Debug.WriteDebug("Networking > Setting Twitch Username: " + s_TwitchUsername);
             s_TwitchToken = TwitchToken;
             Debug.WriteDebug("Networking > Setting Twitch Token: " + s_TwitchToken);
-            s_TwitchChannel = TwitchChannel.ToLower();
-            Debug.WriteDebug("Networking > Setting Twitch Channel (auto lowercase): " + s_TwitchChannel);
             s_TwitchMaster = TwitchMaster;
             Debug.WriteDebug("Networking > Setting Twitch Master: " + s_TwitchMaster);
+            b_isHosting = false;
+            a_TwitchChannels = System.IO.File.ReadAllLines("TwitchChannels.txt");
         }
 
         // Destructor
         ~Networking()
         {
-
         }
 
         // Connect to the IRC/Twitch Server & Loop (Blocking Wise)
@@ -75,17 +78,20 @@ namespace TwitchBot
                     ns_Client = t_Client.GetStream();
                     b_IsConnected = true; // Try/Catch
 
+                    // Set MyUsername for Easy Access
+                    string MyUsername = ":" + s_TwitchUsername + "!" + s_TwitchUsername + "@" + s_TwitchUsername + ".tmi.twitch.tv"; // Build MyUsername for easy access
+
                     // Send First Messages to Authenticate (Basicly IRC RFC)
                     Debug.WriteDebug("Networking > Connect > Handshaking with Protocol");
                     SendMessage("PASS " + s_TwitchToken);
                     SendMessage("NICK " + s_TwitchUsername);
                     SendMessage("CAP REQ :twitch.tv/membership"); // Shows JOIN/PART/UMODES
                     SendMessage("CAP REQ :twitch.tv/commands"); // Activate Commands such as WHISPER/HOST/BAN/PERMABAN/DONATION/MODS
-                    SendMessage("JOIN " + s_TwitchChannel);
-                    string MyUsername = ":" + s_TwitchUsername + "!" + s_TwitchUsername + "@" + s_TwitchUsername + ".tmi.twitch.tv"; // Build MyUsername for easy access
-                    RefreshModsList(MyUsername);
-                    // Let channel know that its connected
-                    //SendMessage(ns_Client, ":" + s_TwitchUsername + "!" + s_TwitchUsername + "@" + s_TwitchUsername + ".tmi.twitch.tv PRIVMSG " + s_TwitchChannel + " :Connected ...");
+
+                    foreach (string TwitchChannel in a_TwitchChannels)
+                    {
+                        JoinChannel(MyUsername, TwitchChannel);
+                    }
 
                     while (b_IsConnected == true)
                     {
@@ -138,7 +144,7 @@ namespace TwitchBot
                         {
                             SplitModerators[i] = SplitModerators[i].Remove(SplitModerators[i].Length - 1, 1);
                         }
-                        m_Moderators.ModeratorStatus(SplitModerators[i]);
+                        m_Moderators.ModeratorStatus(SplitMessage[2], SplitModerators[i]);
                     }
                 }
             }
@@ -150,29 +156,31 @@ namespace TwitchBot
                 SplitMessage[2] = SplitMessage[2].Remove(0, 1);
                 SplitMessage[3] = SplitMessage[3].Remove(0, 1);
 
-                if (SplitMessage[3].Contains("-"))
+                if (b_isHosting == true && SplitMessage[3].Contains("-"))
                 {
-                    SendChannelMessage(MyUsername, SplitMessage[2] + " has stopped the host. Welcome back everybody!");
+                    SendChannelMessage(MyUsername, SplitMessage[2] + " has stopped the host. Welcome back everybody!", "#" + SplitMessage[2]);
+                    b_isHosting = false;
                 }
-                else
+                else if (b_isHosting == false)
                 {
-                    SendChannelMessage(MyUsername, SplitMessage[2] + " is now hosting " + SplitMessage[3] + " for a total of " + SplitMessage[4] + " viewers. You can also go directly to this channel and join the chat by clicking this: https://www.twitch.tv/" + SplitMessage[3]);
+                    SendChannelMessage(MyUsername, SplitMessage[2] + " is now hosting " + SplitMessage[3] + " for a total of " + SplitMessage[4] + " viewers. You can also go directly to this channel and join the chat by clicking this: https://www.twitch.tv/" + SplitMessage[3], "#" + SplitMessage[2]);
+                    b_isHosting = true;
                 }
             }
             // Username Whisper
             else if (SplitMessage[1] == "WHISPER")
             {
-                string[] Username = SplitMessage[0].Split('!');
-                Username[0] = Username[0].Remove(0, 1); // Remove first : character from Username
-                string MyUsername = ":" + s_TwitchUsername + "!" + s_TwitchUsername + "@" + s_TwitchUsername + ".tmi.twitch.tv"; // Build MyUsername for easy access
-                string PrivateMessage = BuildPrivateMessage(SplitMessage);
-                SendUsernameWhisper(MyUsername, Username[0], "You send me: " + PrivateMessage);
+                //string[] Username = SplitMessage[0].Split('!');
+                //Username[0] = Username[0].Remove(0, 1); // Remove first : character from Username
+                //string MyUsername = ":" + s_TwitchUsername + "!" + s_TwitchUsername + "@" + s_TwitchUsername + ".tmi.twitch.tv"; // Build MyUsername for easy access
+                //string PrivateMessage = BuildPrivateMessage(SplitMessage);
+                //SendUsernameWhisper(MyUsername, Username[0], "You send me: " + PrivateMessage);
 
-                string[] MySplitPrivateMessage = PrivateMessage.Split(' ');
-                if (MySplitPrivateMessage[0] == "!mods" && m_Moderators.IsModerator(Username[0]))
-                {
-                    SendUsernameWhisper(MyUsername, Username[0], "The output is: " + m_Moderators.TotalModerators() + " Moderators: " + m_Moderators.ReturnModerators());
-                }
+                //string[] MySplitPrivateMessage = PrivateMessage.Split(' ');
+                //if (MySplitPrivateMessage[0] == "!mods" && m_Moderators.IsModerator(Username[0]))
+                //{
+                //    SendUsernameWhisper(MyUsername, Username[0], "The output is: " + m_Moderators.TotalModerators() + " Moderators: " + m_Moderators.ReturnModerators());
+                //}
                 // Depricated for now, focus on single channel first
                 //else if (MySplitPrivateMessage[0] == "!join" && m_Moderators.IsModerator(Username[0]))
                 //{
@@ -184,10 +192,18 @@ namespace TwitchBot
                 //    SendUsernameWhisper(MyUsername, Username[0], "Trying to part " + MySplitPrivateMessage[1]);
                 //    PartChannel(MyUsername, MySplitPrivateMessage[1]);
                 //}
-                else if (MySplitPrivateMessage[0] == "!amiamod")
-                {
-                    SendUsernameWhisper(MyUsername, Username[0], "The output is: " + m_Moderators.IsModerator(Username[0]));
-                }
+                //else if (MySplitPrivateMessage[0] == "!amiamod")
+                //{
+                //    SendUsernameWhisper(MyUsername, Username[0], "The output is: " + m_Moderators.IsModerator(Username[0]));
+                //}
+                //else if (MySplitPrivateMessage[0] == "!ignoreme")
+                //{
+                //    SendChannelMessage(MyUsername, "!ignoreme");
+                //}
+                //else if (MySplitPrivateMessage[0] == "!unignoreme")
+                //{
+                //    SendChannelMessage(MyUsername, "!unignoreme");
+                //}
             }
             // Channel Message
             else if (SplitMessage[1] == "PRIVMSG")
@@ -195,34 +211,77 @@ namespace TwitchBot
                 string[] Username = SplitMessage[0].Split('!');
                 Username[0] = Username[0].Remove(0, 1); // Remove first : character from Username
                 string MyUsername = ":" + s_TwitchUsername + "!" + s_TwitchUsername + "@" + s_TwitchUsername + ".tmi.twitch.tv"; // Build MyUsername for easy access
+                string MyChannel = SplitMessage[2];
                 string PrivateMessage = BuildPrivateMessage(SplitMessage);
                 string[] MySplitPrivateMessage = PrivateMessage.Split(' ');
 
-                if (MySplitPrivateMessage[0] == "!flip" && m_Moderators.IsModerator(Username[0]))
+                if (MySplitPrivateMessage[0] == "!flip" && m_Moderators.IsModerator(Username[0], MyChannel))
                 {
-                    SendChannelMessage(MyUsername, "┌∩┐( ಠ益ಠ )┌∩┐");
+                    SendChannelMessage(MyUsername, "┌∩┐( ಠ益ಠ )┌∩┐", MyChannel);
                 }
-                else if (MySplitPrivateMessage[0] == "!backseat")
+                //else if (MySplitPrivateMessage[0] == "!backseat")
+                //{
+                //    SendChannelMessage(MyUsername, "No back seat gaming, if she wants / needs help she will ask for it!");
+                //}
+                //else if (MySplitPrivateMessage[0] == "!follow")
+                //{
+                //    SendChannelMessage(MyUsername, "You can follow the streamer on Twitter: https://twitter.com/cursedd0lls and Facebook: https://www.facebook.com/cursedd0lls");
+                //}
+                //else if (MySplitPrivateMessage[0] == "!donate")
+                //{
+                //    SendChannelMessage(MyUsername, "If you want to support the streamer you can give a donation on the following website: https://www.twitchalerts.com/donate/curseddolls");
+                //}
+                else if (MySplitPrivateMessage[0] == "!quote")
                 {
-                    SendChannelMessage(MyUsername, "No back seat gaming, if she wants / needs help she will ask for it!");
+                    SendChannelMessage(MyUsername, q_Quotes.RandomQuote(SplitMessage[2]), MyChannel);
                 }
-                else if (MySplitPrivateMessage[0] == "!follow")
+                else if (MySplitPrivateMessage[0] == "!totalquotes" && m_Moderators.IsModerator(Username[0], MyChannel))
                 {
-                    SendChannelMessage(MyUsername, "You can follow the streamer on Twitter: https://twitter.com/cursedd0lls and Facebook: https://www.facebook.com/cursedd0lls");
+                    SendChannelMessage(MyUsername, "Total Quotes: " + q_Quotes.CountQuotes(SplitMessage[2]), MyChannel);
                 }
-                else if (MySplitPrivateMessage[0] == "!donate")
+                else if (MySplitPrivateMessage[0] == "!addquote")
                 {
-                    SendChannelMessage(MyUsername, "If you want to support the streamer you can give a donation on the following website: https://www.twitchalerts.com/donate/curseddolls");
-                }
-
-                if (!m_Moderators.IsModerator(Username[0]))
-                {
-                    if (cf_ChannelFilter.ContainsCaps(Username[0], PrivateMessage))
+                    if (m_Moderators.IsModerator(Username[0], MyChannel) == false)
                     {
-                        SendChannelMessage(MyUsername, "Please refrain from using capital characters: " + Username[0]);
+                        SendChannelMessage(MyUsername, "Only Channel Moderators may add quotes for now, " + Username[0], MyChannel);
+                    }
+                    else
+                    {
+                        if (MySplitPrivateMessage.Length >= 2)
+                        {
+                            PrivateMessage = PrivateMessage.Remove(0, 10);
+                            SendChannelMessage(MyUsername, "Adding Quote: " + PrivateMessage, MyChannel);
+                            q_Quotes.WriteQuote(PrivateMessage, Username[0], SplitMessage[2]);
+                        }
+                        else
+                        {
+                            SendChannelMessage(MyUsername, "The command is '!addquote [quote to add]'", MyChannel);
+                        }
                     }
                 }
-                cf_ChannelFilter.ContainsURL(Username[0], PrivateMessage);
+                else if (MySplitPrivateMessage[0] == "!spoiler")
+                {
+                    SendChannelMessage(MyUsername, "SPOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOILERS!!!!!!!", MyChannel);
+                }
+                else if (MySplitPrivateMessage[0] == "!nerfwar")
+                {
+                    SendChannelMessage(MyUsername, "NERF WAR!!! NerfBlueBlaster NerfRedBlaster NerfBlueBlaster NerfRedBlaster NerfBlueBlaster NerfRedBlaster NerfBlueBlaster NerfRedBlaster NerfBlueBlaster NerfRedBlaster NerfBlueBlaster NerfRedBlaster NerfBlueBlaster NerfRedBlaster", MyChannel);
+                }
+
+                // Check for CAPS and URL's in messages
+                //if (!m_Moderators.IsModerator(Username[0], MyChannel))
+                //{
+                //    if (cf_ChannelFilter.ContainsCaps(Username[0], PrivateMessage))
+                //    {
+                //        SendChannelMessage(MyUsername, "Please refrain from using capital characters: " + Username[0]);
+                //    }
+                //    else if (cf_ChannelFilter.ContainsURL(Username[0], PrivateMessage))
+                //    {
+                //        SendChannelMessage(MyUsername, "Please refrain from posting links: " + Username[0]);
+                //    }
+                //}
+
+                // When own name is called
                 cf_ChannelFilter.ContainsTwitchUsername(Username[0], s_TwitchUsername, PrivateMessage);
 
                 // ButtsBot Part
@@ -231,7 +290,7 @@ namespace TwitchBot
                     Debug.WriteDebug("Networking > ButtsBot > ButtsBot said: " + PrivateMessage);
                     if (p_Probability.ProbabilityPercentage(25) == true)
                     {
-                        SendChannelMessage(MyUsername, b_ButtsBot.ButtsBotReply());
+                        SendChannelMessage(MyUsername, b_ButtsBot.ButtsBotReply(), MyChannel);
                     }
                 }
             }
@@ -250,6 +309,7 @@ namespace TwitchBot
                 ns_Client.Close();
                 t_Client.Close();
                 b_IsConnected = false;
+                b_isHosting = false;
             }
         }
 
@@ -288,15 +348,15 @@ namespace TwitchBot
         }
 
         // Build Mod List Without Relying On +o -o
-        public void RefreshModsList(string MyUsername)
+        public void RefreshModsList(string MyUsername, string TwitchChannel)
         {
-            SendMessage(MyUsername + " PRIVMSG " + s_TwitchChannel + " :/MODS");
+            SendMessage(MyUsername + " PRIVMSG " + TwitchChannel + " :/MODS");
         }
 
         // Send a Message to a Channel
-        public void SendChannelMessage(string MyUsername, string Message)
+        public void SendChannelMessage(string MyUsername, string Message, string TwitchChannel)
         {
-            SendMessage(MyUsername + " PRIVMSG " + s_TwitchChannel + " :" + Message);
+            SendMessage(MyUsername + " PRIVMSG " + TwitchChannel + " :" + Message);
         }
 
         // Send a Whisper to a Username
@@ -306,15 +366,17 @@ namespace TwitchBot
         }
 
         // Join Channel
-        public void JoinChannel(string MyUsername, string Channel)
+        public void JoinChannel(string MyUsername, string TwitchChannel)
         {
-            SendMessage(MyUsername + " JOIN " + Channel);
+            SendMessage(MyUsername + " JOIN " + TwitchChannel);
+            RefreshModsList(MyUsername, TwitchChannel);
+            m_Moderators.ModeratorStatus(TwitchChannel, TwitchChannel.Remove(0, 1));
         }
 
         // Part Channel
-        public void PartChannel(string MyUsername, string Channel)
+        public void PartChannel(string MyUsername, string TwitchChannel)
         {
-            SendMessage(MyUsername + " PART " + Channel);
+            SendMessage(MyUsername + " PART " + TwitchChannel);
         }
     }
 }

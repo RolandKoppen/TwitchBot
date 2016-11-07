@@ -9,27 +9,27 @@ namespace TwitchBot
 {
     class Debugging
     {
-        // File Writer
-        System.IO.StreamWriter sw_Debugging;
+        string s_DebugFile;
 
         // Constructor
         public Debugging(string LogFile)
         {
-            sw_Debugging = new System.IO.StreamWriter(new FileStream(LogFile, FileMode.OpenOrCreate, FileAccess.ReadWrite), Encoding.UTF8);  // Also use UTF8
+            s_DebugFile = LogFile;
         }
 
         // Destructor
         ~Debugging()
-        {
-            
+        {          
         }
 
         // Write Debug Logging to Console and The Specified LogFile
         public void WriteDebug(string DebugMessage)
         {
-            Console.WriteLine("[" + DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss") + "] " + DebugMessage);
-            sw_Debugging.WriteLine("[" + DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss") + "] " + DebugMessage);
-            sw_Debugging.Flush();
+            using (StreamWriter outputFile = new StreamWriter(s_DebugFile, true, Encoding.UTF8))
+            {
+                Console.WriteLine("[" + DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss") + "] " + DebugMessage);
+                outputFile.WriteLine("[" + DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss") + "] " + DebugMessage);
+            }
         }
     }
 }

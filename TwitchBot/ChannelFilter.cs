@@ -50,6 +50,8 @@ namespace TwitchBot
         // Returns true if the Message contains the Bot Username
         public bool ContainsTwitchUsername(string Username, string TwitchUsername, string Message)
         {
+            Message = Message.ToLower();
+            TwitchUsername = TwitchUsername.ToLower();
             if (Message.Contains(TwitchUsername) == true)
             {
                 Debug.WriteDebug("ChannelFilter: ContainsTwitchUsername > Username: " + Username + " Message: " + Message);

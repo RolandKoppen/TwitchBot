@@ -231,7 +231,7 @@ namespace TwitchBot
                 //{
                 //    SendChannelMessage(MyUsername, "If you want to support the streamer you can give a donation on the following website: https://www.twitchalerts.com/donate/curseddolls");
                 //}
-                else if (MySplitPrivateMessage[0] == "!quote")
+                else if (MySplitPrivateMessage[0] == "!quote" && m_Moderators.IsModerator(Username[0], MyChannel))
                 {
                     SendChannelMessage(MyUsername, q_Quotes.RandomQuote(SplitMessage[2]), MyChannel);
                 }
@@ -259,11 +259,11 @@ namespace TwitchBot
                         }
                     }
                 }
-                else if (MySplitPrivateMessage[0] == "!spoiler")
+                else if (MySplitPrivateMessage[0] == "!spoiler" && m_Moderators.IsModerator(Username[0], MyChannel))
                 {
                     SendChannelMessage(MyUsername, "SPOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOILERS!!!!!!!", MyChannel);
                 }
-                else if (MySplitPrivateMessage[0] == "!nerfwar")
+                else if (MySplitPrivateMessage[0] == "!nerfwar" && m_Moderators.IsModerator(Username[0], MyChannel))
                 {
                     SendChannelMessage(MyUsername, "NERF WAR!!! NerfBlueBlaster NerfRedBlaster NerfBlueBlaster NerfRedBlaster NerfBlueBlaster NerfRedBlaster NerfBlueBlaster NerfRedBlaster NerfBlueBlaster NerfRedBlaster NerfBlueBlaster NerfRedBlaster NerfBlueBlaster NerfRedBlaster", MyChannel);
                 }
@@ -282,10 +282,10 @@ namespace TwitchBot
                 //}
 
                 // When own name is called
-                cf_ChannelFilter.ContainsTwitchUsername(Username[0], s_TwitchUsername, PrivateMessage);
+                cf_ChannelFilter.ContainsTwitchUsername(Username[0], s_TwitchUsername.ToLower(), PrivateMessage.ToLower());
 
                 // ButtsBot Part
-                if (Username[0] == b_ButtsBot.ButtsBotName.ToLower()) // Always cast ToLower?
+                if (Username[0].ToLower() == b_ButtsBot.ButtsBotName.ToLower()) // Always cast ToLower?
                 {
                     Debug.WriteDebug("Networking > ButtsBot > ButtsBot said: " + PrivateMessage);
                     if (p_Probability.ProbabilityPercentage(25) == true)

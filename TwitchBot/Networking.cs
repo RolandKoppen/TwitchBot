@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Net.Sockets; // Used for Networking
 using System.Threading; // Used for Reconnect Timer
 using System.IO; // Used for StreamReader
+
 namespace TwitchBot
 {
     class Networking
@@ -282,8 +283,18 @@ namespace TwitchBot
                 //}
 
                 // When own name is called
-                cf_ChannelFilter.ContainsTwitchUsername(Username[0], s_TwitchUsername.ToLower(), PrivateMessage.ToLower());
 
+
+                if (m_Moderators.IsModerator(Username[0], MyChannel))
+                {
+                    string AIMLBotReply = cf_ChannelFilter.ContainsTwitchUsername(Username[0], s_TwitchUsername.ToLower(), PrivateMessage.ToLower());
+                    if (AIMLBotReply.Length > 0)
+                    {
+                        SendChannelMessage(MyUsername, AIMLBotReply, MyChannel);
+                    }
+
+                    //cf_ChannelFilter.ContainsTwitchUsername(Username[0], s_TwitchUsername.ToLower(), PrivateMessage.ToLower());
+                }
                 // ButtsBot Part
                 if (Username[0].ToLower() == b_ButtsBot.ButtsBotName.ToLower()) // Always cast ToLower?
                 {

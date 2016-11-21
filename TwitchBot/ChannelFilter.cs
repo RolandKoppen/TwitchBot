@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using AIMLbot; // Used for the AIMLBot
 
 namespace TwitchBot
 {
@@ -10,10 +11,17 @@ namespace TwitchBot
     {
         // Enable Debugging
         Debugging Debug = new Debugging("ChannelFilter.txt");
-        
+
+        // Enable AIMLBot
+        Bot AIMLBot = new Bot();
+
         // Constructor
         public ChannelFilter()
         {
+            // New AIML Part // myUser??
+            AIMLBot.loadSettings();
+            AIMLBot.loadAIMLFromFiles();
+            AIMLBot.isAcceptingUserInput = true;
         }
 
         // Destructor
@@ -48,16 +56,22 @@ namespace TwitchBot
         }
 
         // Returns true if the Message contains the Bot Username
-        public bool ContainsTwitchUsername(string Username, string TwitchUsername, string Message)
+        public string ContainsTwitchUsername(string Username, string TwitchUsername, string Message)
         {
             if (Message.Contains(TwitchUsername) == true)
             {
                 Debug.WriteDebug("ChannelFilter: ContainsTwitchUsername > Username: " + Username + " Message: " + Message);
-                return true;
+
+                string StrippedMessageFromTwitchUsername = Message.Replace(TwitchUsername, "");
+
+                User AIMLUsername = new User(Username, AIMLBot);
+                Request r = new Request(StrippedMessageFromTwitchUsername, AIMLUsername, AIMLBot);
+                Result res = AIMLBot.Chat(r);
+                return res.Output;
             }
             else
             {
-                return false;
+                return "";
             }
         }
     }

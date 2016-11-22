@@ -17,15 +17,15 @@
   <item name="botmaster" value="endymion2k14"/>
   <item name="master" value="endymion2k14"/>
   <item name="author" value="Nicholas H.Tollervey"/>
-  <item name="location" value="Unknown"/>
-  <item name="gender" value="-1"/>
+  <item name="location" value="Cyberspace"/>
+  <item name="gender" value="female"/>
   <item name="birthday" value="2006/10/08"/>
   <item name="birthplace" value="Towcester, Northamptonshire, UK"/>
   <item name="website" value="http://sourceforge.net/projects/aimlbot"/>
-  <item name="adminemail" value=""/>
+  <item name="adminemail" value="john@doe.org"/>
   <item name="islogging" value="false"/>
   <item name="willcallhome" value="false"/>
-  <item name="timeout" value="10000000"/>
+  <item name="timeout" value="2000"/>
   <item name="timeoutmessage" value="ERROR: The request has timed out."/>
   <item name="culture" value="en-US"/>
   <item name="ip" value="(c) 2006 Nicholas H.Tollervey. Released under the terms of the LGPL"/>

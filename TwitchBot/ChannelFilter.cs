@@ -64,6 +64,12 @@ namespace TwitchBot
 
                 string StrippedMessageFromTwitchUsername = Message.Replace(TwitchUsername, "");
 
+                //if (StrippedMessageFromTwitchUsername.Contains(", "))
+                //{
+                //    StrippedMessageFromTwitchUsername = StrippedMessageFromTwitchUsername.Replace(", ", "");
+                //}
+                //StrippedMessageFromTwitchUsername = TwitchUsername + ", " + StrippedMessageFromTwitchUsername;
+
                 User AIMLUsername = new User(Username, AIMLBot);
                 Request r = new Request(StrippedMessageFromTwitchUsername, AIMLUsername, AIMLBot);
                 Result res = AIMLBot.Chat(r);
